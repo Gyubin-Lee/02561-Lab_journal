@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projection Shadows with Transparency</title>
+    <script src="../angelCommon/initShaders.js"></script>
+    <script src="../angelCommon/MV.js"></script>
+    <script src="../angelCommon/webgl-utils.js"></script>
+</head>
+<body>
+    <canvas id="webgl-canvas" width="512" height="512"></canvas>
+
+    <!-- Vertex Shader -->
+    <script id="vertex-shader" type="x-shader/x-vertex">
+        attribute vec4 a_Position;
+        attribute vec2 a_TexCoord;
+
+        uniform mat4 u_ModelMatrix;
+        uniform mat4 u_ProjectionMatrix;
+        uniform mat4 u_ViewMatrix;
+
+        varying vec2 v_TexCoord;
+
+        void main() {
+            gl_Position = u_ProjectionMatrix * u_ViewMatrix * u_ModelMatrix * a_Position;
+            v_TexCoord = a_TexCoord;
+        }
+    </script>
+
+    <!-- Fragment Shader -->
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        precision mediump float;
+
+        varying vec2 v_TexCoord;
+
+        uniform sampler2D u_TexMap;
+        uniform float u_Visibility;
+
+        void main() {
+            vec4 color = texture2D(u_TexMap, v_TexCoord);
+            gl_FragColor = vec4(color.rgb * u_Visibility, color.a * u_Visibility);
+        }
+    </script>
+
+    <script src="Part4.js"></script>
+</body>
+</html>

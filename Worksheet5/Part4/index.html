@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Part 4 - Phong Shading</title>
+    <script src="angelCommon/OBJParser.js"></script>
+    <script src="angelCommon/initShaders.js"></script>
+    <script src="angelCommon/MV.js"></script>
+</head>
+<body>
+    <canvas id="webgl-canvas" width="512" height="512"></canvas>
+
+    <!-- Vertex Shader -->
+    <script id="vertex-shader" type="x-shader/x-vertex">
+        attribute vec4 a_Position;
+        attribute vec4 a_Normal;
+        
+        uniform mat4 u_Projection;
+        uniform mat4 u_View;
+        uniform mat4 u_Model;
+        
+        varying vec3 v_Normal;
+        varying vec3 v_Position;
+        
+        void main() {
+            gl_Position = u_Projection * u_View * u_Model * a_Position;
+            v_Position = vec3(u_Model * a_Position);
+            v_Normal = mat3(u_Model) * vec3(a_Normal);
+        }
+    </script>
+
+    <!-- Fragment Shader -->
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        precision mediump float;
+
+        uniform vec3 u_LightDirection;
+        uniform vec3 u_LightColor;
+        uniform vec3 u_AmbientLight;
+        uniform vec3 u_SpecularColor;
+        uniform float u_Shininess;
+
+        varying vec3 v_Normal;
+        varying vec3 v_Position;
+
+        void main() {
+            vec3 normal = normalize(v_Normal);
+            vec3 lightDir = normalize(u_LightDirection);
+            vec3 viewDir = normalize(-v_Position);
+
+            // Ambient component
+            vec3 ambient = u_AmbientLight;
+
+            // Diffuse component
+            float diff = max(dot(normal, lightDir), 0.0);
+            vec3 diffuse = diff * u_LightColor;
+
+            // Specular component
+            vec3 reflectDir = reflect(-lightDir, normal);
+            float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_Shininess);
+            vec3 specular = spec * u_SpecularColor;
+
+            // Combine results
+            vec3 result = ambient + diffuse + specular;
+            gl_FragColor = vec4(result, 1.0);
+        }
+    </script>
+
+    <!-- Main JavaScript -->
+    <script src="Part4.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worksheet 3-1</title>
+    <script src="../../angelCommon/initShaders.js"></script>
+    <script src="../../angelCommon/MV.js"></script>
+</head>
+<body>
+    <canvas id="webgl-canvas" width="512" height="512"></canvas>
+    <!-- Vertex shader -->
+    <script id="vertex-shader" type="x-shader/x-vertex">
+        attribute vec4 a_Position;
+        uniform mat4 MVP;
+
+        void main() {
+            gl_Position = MVP * a_Position;
+        }
+    </script>
+    
+    <!-- Fragment shader -->
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        precision mediump float;
+        uniform vec4 u_FragColor;
+        
+        void main() {
+            gl_FragColor = u_FragColor;
+        }
+    </script>
+
+    <!-- Include your external JavaScript file -->
+    <script src="Part1.js"></script>
+</body>
+</html>

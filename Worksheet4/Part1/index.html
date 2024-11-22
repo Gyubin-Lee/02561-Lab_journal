@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worksheet 4 - Part 1</title>
+    <script src="../../angelCommon/initShaders.js"></script>
+    <script src="../../angelCommon/MV.js"></script>
+</head>
+<body>
+    <canvas id="webgl-canvas" width="512" height="512"></canvas>
+    <br />
+    <button id="increase">Increase Subdivision</button>
+    <button id="decrease">Decrease Subdivision</button>
+    <!-- Vertex shader -->
+    <script id="vertex-shader" type="x-shader/x-vertex">
+        attribute vec4 a_Position;
+        uniform mat4 u_Projection;
+        uniform mat4 u_View;
+        uniform mat4 u_Model;
+
+        void main() {
+            gl_Position = u_Projection * u_View * u_Model * a_Position;
+        }
+    </script>
+    
+    <!-- Fragment shader -->
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        precision mediump float;
+        uniform vec4 u_FragColor;
+        
+        void main() {
+            gl_FragColor = u_FragColor;
+        }
+    </script>
+
+    <script src="Part1.js"></script>
+</body>
+</html>

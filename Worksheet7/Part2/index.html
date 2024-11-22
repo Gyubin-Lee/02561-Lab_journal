@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Environment Mapping</title>
+    <script src="../angelCommon/initShaders.js"></script>
+    <script src="../angelCommon/MV.js"></script>
+</head>
+<body>
+    <canvas id="webgl-canvas" width="512" height="512"></canvas>
+
+    <!-- Vertex Shader for Background -->
+    <script id="vertex-shader-bg" type="x-shader/x-vertex">
+        attribute vec4 a_Position;
+        uniform mat4 u_Mtex;
+        varying vec3 v_TexCoord;
+
+        void main() {
+            gl_Position = a_Position; // Clip-space position
+            v_TexCoord = (u_Mtex * a_Position).xyz; // Calculate texture coordinates
+        }
+    </script>
+
+    <!-- Fragment Shader for Background -->
+    <script id="fragment-shader-bg" type="x-shader/x-fragment">
+        precision mediump float;
+        varying vec3 v_TexCoord;
+        uniform samplerCube u_CubeMap;
+
+        void main() {
+            gl_FragColor = textureCube(u_CubeMap, normalize(v_TexCoord)); // Use cube map texture
+        }
+    </script>
+
+    <!-- Vertex Shader for Cube Map -->
+    <script id="vertex-shader-cube" type="x-shader/x-vertex">
+        attribute vec4 a_Position;
+        attribute vec3 a_Normal;
+
+        uniform mat4 u_Projection;
+        uniform mat4 u_View;
+        uniform mat4 u_Model;
+
+        varying vec3 v_WorldNormal;
+
+        void main() {
+            gl_Position = u_Projection * u_View * u_Model * a_Position;
+            v_WorldNormal = mat3(u_Model) * a_Normal; // Transform normals to world space
+        }
+    </script>
+
+    <!-- Fragment Shader for Cube Map -->
+    <script id="fragment-shader-cube" type="x-shader/x-fragment">
+        precision mediump float;
+        varying vec3 v_WorldNormal;
+        uniform samplerCube u_CubeMap;
+
+        void main() {
+            vec3 normal = normalize(v_WorldNormal);
+            gl_FragColor = textureCube(u_CubeMap, normal); // Use cube map texture
+        }
+    </script>
+
+    <script src="Part2.js"></script>
+</body>
+</html>

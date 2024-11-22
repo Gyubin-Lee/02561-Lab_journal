@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Part 2 - Texture Filtering and Wrapping</title>
+    <script src="../angelCommon/initShaders.js"></script>
+    <script src="../angelCommon/MV.js"></script>
+</head>
+<body>
+    <canvas id="webgl-canvas" width="512" height="512"></canvas>
+
+    <!-- Controls -->
+    <div>
+        <label for="wrapMode">Texture Wrapping:</label>
+        <select id="wrapMode">
+            <option value="REPEAT">REPEAT</option>
+            <option value="CLAMP_TO_EDGE">CLAMP_TO_EDGE</option>
+        </select>
+
+        <label for="filterMode">Texture Filtering:</label>
+        <select id="filterMode">
+            <option value="NEAREST">NEAREST</option>
+            <option value="LINEAR">LINEAR</option>
+            <option value="NEAREST_MIPMAP_NEAREST">NEAREST_MIPMAP_NEAREST</option>
+            <option value="LINEAR_MIPMAP_NEAREST">LINEAR_MIPMAP_NEAREST</option>
+            <option value="NEAREST_MIPMAP_LINEAR">NEAREST_MIPMAP_LINEAR</option>
+            <option value="LINEAR_MIPMAP_LINEAR">LINEAR_MIPMAP_LINEAR</option>
+        </select>
+    </div>
+
+    <!-- Vertex Shader -->
+    <script id="vertex-shader" type="x-shader/x-vertex">
+        attribute vec4 a_Position;
+        attribute vec2 a_TexCoord;
+
+        uniform mat4 u_Projection;
+        uniform mat4 u_View;
+
+        varying vec2 v_TexCoord;
+
+        void main() {
+            gl_Position = u_Projection * u_View * a_Position;
+            v_TexCoord = a_TexCoord; // Pass texture coordinates to the fragment shader
+        }
+    </script>
+
+    <!-- Fragment Shader -->
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        precision mediump float;
+
+        varying vec2 v_TexCoord;
+
+        uniform sampler2D u_Texture;
+
+        void main() {
+            gl_FragColor = texture2D(u_Texture, v_TexCoord); // Sample the texture
+        }
+    </script>
+
+    <!-- Main JavaScript -->
+    <script src="Part2.js"></script>
+</body>
+</html>
