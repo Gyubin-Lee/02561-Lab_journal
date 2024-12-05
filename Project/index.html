@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project</title>
+    <script src="../../angelCommon/initShaders.js"></script>
+    <script src="../../angelCommon/MV.js"></script>
+    <script src="../../angelCommon/webgl-utils.js"></script>
+</head>
+<body>
+    <div>
+        <button id="pointModeButton">add points</button>
+        <button id="triangleModeButton">add triangles</button>
+        <button id="circleModeButton">add spheres</button>
+        <button id="bezierModeButton">add Bezier</button>
+    </div>
+
+
+    <canvas id="webgl-canvas" width="512" height="512"></canvas>
+    <!-- Vertex shader -->
+    <script id="vertex-shader" type="x-shader/x-vertex">
+        attribute vec4 a_Position;
+        attribute vec4 a_Color;
+
+        varying vec4 v_Color;
+
+        void main() {
+            gl_Position = a_Position;
+            v_Color = a_Color;
+            gl_PointSize = 20.0;
+        }
+    </script>
+    
+    <!-- Fragment shader -->
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        precision mediump float;
+
+        varying vec4 v_Color;
+
+        void main() {
+            gl_FragColor = v_Color;
+        }
+    </script>
+
+    <select id="colorMenu" size="8">
+        <option value="0" selected>Black</option>
+        <option value="1">Red</option>
+        <option value="2">Yellow</option>
+        <option value="3">Green</option>
+        <option value="4">Blue</option>
+        <option value="5">Magenta</option>
+        <option value="6">Cyan</option>
+        <option value="7">Cornflower</option>
+    </select>
+
+    <select id="clearMenu" size="1">
+        <option value="0">Black</option>
+        <option value="1">Red</option>
+        <option value="2">Yellow</option>
+        <option value="3">Green</option>
+        <option value="4">Blue</option>
+        <option value="5">Magenta</option>
+        <option value="6">Cyan</option>
+        <option value="7" selected>Cornflower</option>
+    </select>
+
+    <br/>
+    <button id="clearButton">Clear Canvas</button>
+
+    <!-- Include your external JavaScript file -->
+    <script src="project.js"></script>
+
+    <br/>
+    <a href="../index.html">Back to Home</a>
+</body>
+</html>
