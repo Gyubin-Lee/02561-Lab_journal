@@ -110,7 +110,9 @@ window.onload = function init() {
             addPointAsSquare(x, y, colorSelected, true);
             if (tempPoints.length === 3) {
                 // Draw the Bezier curve
-                drawQuadraticBezierCurve(tempPoints[0], tempPoints[1], tempPoints[2], colorSelected);
+                const w1Input = document.getElementById("w1Input");
+                const w1 = parseFloat(w1Input.value);
+                drawQuadraticBezierCurve(tempPoints[0], tempPoints[1], tempPoints[2], colorSelected, w1);
                 finalizeShape();
             }
         }
@@ -146,14 +148,22 @@ window.onload = function init() {
         }
     }
 
-    function drawQuadraticBezierCurve(p0, p1, p2, color) {
+    function drawQuadraticBezierCurve(p0, p1, p2, color, w1=1.0) {
+        const w0 = 1;
+        const w2 = 1;
         const segments = 50;
         let prev = p0;
+    
         for (let i = 1; i <= segments; i++) {
             let t = i / segments;
-            let x = (1 - t)*(1 - t)*p0[0] + 2*(1 - t)*t*p1[0] + t*t*p2[0];
-            let y = (1 - t)*(1 - t)*p0[1] + 2*(1 - t)*t*p1[1] + t*t*p2[1];
-
+            
+            // Compute denominator for the rational Bezier
+            let denom = (1 - t)*(1 - t)*w0 + 2*(1 - t)*t*w1 + t*t*w2;
+            
+            // Compute weighted sum for x and y
+            let x = ((1 - t)*(1 - t)*w0*p0[0] + 2*(1 - t)*t*w1*p1[0] + t*t*w2*p2[0]) / denom;
+            let y = ((1 - t)*(1 - t)*w0*p0[1] + 2*(1 - t)*t*w1*p1[1] + t*t*w2*p2[1]) / denom;
+    
             addLineSegment(prev, [x, y], color);
             prev = [x, y];
         }
