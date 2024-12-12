@@ -1,4 +1,3 @@
-// Wait until the window is loaded
 window.onload = function init() {
     const canvas = document.getElementById("webgl-canvas");
     const colorMenu = document.getElementById("colorMenu");
@@ -6,8 +5,13 @@ window.onload = function init() {
     const clearButton = document.getElementById("clearButton");
     const pointModeButton = document.getElementById("pointModeButton");
     const triangleModeButton = document.getElementById("triangleModeButton");
-    const circleModeButton = document.getElementById("circleModeButton"); // New button for circle mode
+    const circleModeButton = document.getElementById("circleModeButton");
+
     const gl = canvas.getContext("webgl");
+    if (!gl) {
+        alert("Your browser does not support WebGL");
+        return;
+    }
 
     const colors = [
         [0.0, 0.0, 0.0, 1.0],      // Black
@@ -20,78 +24,53 @@ window.onload = function init() {
         [0.3921, 0.5843, 0.9294, 1.0] // Cornflower
     ];
 
-    if (!gl) {
-        alert("Your browser does not support WebGL");
-        return;
-    }
-
-    // Initialize the shaders using initShaders.js
-    var program = initShaders(gl, "vertex-shader", "fragment-shader");
+    const program = initShaders(gl, "vertex-shader", "fragment-shader");
     gl.useProgram(program);
 
-    // Vertex buffer pre-allocation
-    var maxVertices = 10000;
-    var index = 0, numPoints = 0;
+    // Dynamic arrays for permanent shapes
+    let trianglePositions = [];
+    let triangleColors = [];
+    let linePositions = [];
+    let lineColors = [];
 
-    // Create buffers
-    var positionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, maxVertices * 2 * Float32Array.BYTES_PER_ELEMENT, gl.DYNAMIC_DRAW);
+    // Arrays for helper points (temporary)
+    let helperPositions = [];
+    let helperColors = [];
 
-    var colorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, maxVertices * 4 * Float32Array.BYTES_PER_ELEMENT, gl.DYNAMIC_DRAW);
-
-    // Get attribute locations
-    var a_Position = gl.getAttribLocation(program, "a_Position");
-    var a_Color = gl.getAttribLocation(program, "a_Color");
-
-    // Set default mode and temporary arrays
-    let drawingMode = "point"; // "point", "triangle", or "circle"
+    let drawingMode = "point";
     let tempPoints = [];
     let tempColors = [];
     let circleCenter = null;
+    let centerColor = null;
 
-    // Button event listeners to switch modes
-    pointModeButton.addEventListener("click", function() {
-        drawingMode = "point";
-        tempPoints = [];
-        tempColors = [];
-        circleCenter = null;
-    });
-
-    triangleModeButton.addEventListener("click", function() {
-        drawingMode = "triangle";
-        tempPoints = [];
-        tempColors = [];
-        circleCenter = null;
-    });
-
-    circleModeButton.addEventListener("click", function() {
-        drawingMode = "circle";
-        tempPoints = [];
-        tempColors = [];
-        circleCenter = null;
-    });
-
-    // Clear button event listener
-    clearButton.addEventListener("click", function(ev) {
-        const clearColorIndex = clearMenu.selectedIndex;
-        const bgcolor = colors[clearColorIndex];
-        
-        gl.clearColor(bgcolor[0], bgcolor[1], bgcolor[2], bgcolor[3]);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-
-        // Clear the buffers and reset counters
-        numPoints = 0;
-        index = 0;
+    function resetTempData() {
         tempPoints = [];
         tempColors = [];
         circleCenter = null;
         centerColor = null;
-    });
+    }
 
-    // Canvas click event listener
+    pointModeButton.onclick = () => { drawingMode = "point"; resetTempData(); };
+    triangleModeButton.onclick = () => { drawingMode = "triangle"; resetTempData(); };
+    circleModeButton.onclick = () => { drawingMode = "circle"; resetTempData(); };
+
+    clearButton.onclick = function() {
+        const clearColorIndex = clearMenu.selectedIndex;
+        const bgcolor = colors[clearColorIndex];
+        gl.clearColor(bgcolor[0], bgcolor[1], bgcolor[2], bgcolor[3]);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        // Clear all arrays
+        trianglePositions = [];
+        triangleColors = [];
+        linePositions = [];
+        lineColors = [];
+        helperPositions = [];
+        helperColors = [];
+
+        resetTempData();
+    };
+
     canvas.addEventListener("click", function(ev) {
         var bbox = ev.target.getBoundingClientRect();
         var x = 2 * (ev.clientX - bbox.left) / canvas.width - 1;
@@ -99,99 +78,173 @@ window.onload = function init() {
         var colorSelected = colors[colorMenu.selectedIndex];
 
         if (drawingMode === "point") {
-            addPointAsSquare(x, y, colorSelected);
+            // Just add a small square point permanently (no helpers needed)
+            addPointAsSquare(x, y, colorSelected, false);
         } else if (drawingMode === "triangle") {
-            // Collect points for triangle
+            // Wait until we have 3 points
             tempPoints.push([x, y]);
             tempColors.push(colorSelected);
-
+            // Show a helper point
+            addPointAsSquare(x, y, colorSelected, true);
             if (tempPoints.length === 3) {
+                // Finalize the triangle
                 addTriangle(tempPoints, tempColors);
-                tempPoints = [];
-                tempColors = [];
-            } else {
-                addPointAsSquare(x, y, colorSelected, offset=0.002);
+                // Clear helper points since the shape is done
+                finalizeShape();
             }
         } else if (drawingMode === "circle") {
             if (!circleCenter) {
-                // First click: Set the center of the circle
                 circleCenter = [x, y];
                 centerColor = colorSelected;
-                addPointAsSquare(x, y, colorSelected);
+                addPointAsSquare(x, y, colorSelected, true);
             } else {
-                // Second click: Calculate radius and draw circle
-                const radius = Math.sqrt(Math.pow(x - circleCenter[0], 2) + Math.pow(y - circleCenter[1], 2));
+                const radius = Math.sqrt((x - circleCenter[0])**2 + (y - circleCenter[1])**2);
                 drawCircle(circleCenter, radius, colorSelected, centerColor);
-                circleCenter = null; // Reset for the next circle
+                finalizeShape();
             }
         }
+
+        redraw();
     });
 
-    // Set the clear color for the canvas
     gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    // Helper function to add a point as a square (for visibility)
-    function addPointAsSquare(x, y, color, offset=0.03) {
-        const topLeft = [x - offset, y + offset];
-        const topRight = [x + offset, y + offset];
-        const bottomRight = [x + offset, y - offset];
-        const bottomLeft = [x - offset, y - offset];
+    // --- Helper Functions ---
 
-        addVertex(topLeft[0], topLeft[1], color);
-        addVertex(topRight[0], topRight[1], color);
-        addVertex(bottomRight[0], bottomRight[1], color);
-
-        addVertex(topLeft[0], topLeft[1], color);
-        addVertex(bottomRight[0], bottomRight[1], color);
-        addVertex(bottomLeft[0], bottomLeft[1], color);
-    }
-
-    // Helper function to add a triangle
     function addTriangle(points, colors) {
-        points.forEach((point, i) => {
-            addVertex(point[0], point[1], colors[i]);
-        });
+        for (let i = 0; i < 3; i++) {
+            addTriangleVertex(points[i], colors[i]);
+        }
     }
 
-    // Function to draw a circle using individual triangles
-    function drawCircle(center, radius, color, centerColor) {
-        const numSegments = 100; // More segments = smoother circle
-        const angleIncrement = (2 * Math.PI) / numSegments;
-
+    function drawCircle(center, radius, outerColor, cColor) {
+        const numSegments = 100;
+        const angleIncrement = 2 * Math.PI / numSegments;
         for (let i = 0; i < numSegments; i++) {
             const angle1 = i * angleIncrement;
             const angle2 = (i + 1) * angleIncrement;
-
-            // Calculate points on the circumference
             const x1 = center[0] + radius * Math.cos(angle1);
             const y1 = center[1] + radius * Math.sin(angle1);
             const x2 = center[0] + radius * Math.cos(angle2);
             const y2 = center[1] + radius * Math.sin(angle2);
 
-            // Create a triangle for this segment
-            addVertex(center[0], center[1], centerColor); // Center of circle
-            addVertex(x1, y1, color); // First point on circumference
-            addVertex(x2, y2, color); // Second point on circumference
+            addTriangleVertex(center, cColor);
+            addTriangleVertex([x1, y1], outerColor);
+            addTriangleVertex([x2, y2], outerColor);
         }
     }
 
-    // Helper function to add a vertex to buffers
-    function addVertex(x, y, color) {
+    // This function adds a small square. If 'isHelper' is true, it goes into helper arrays.
+    // If false, it goes into the main triangle arrays.
+    function addPointAsSquare(x, y, color, isHelper) {
+        if (isHelper) {
+            offset = 0.005;
+        } else {
+            offset = 0.03;
+        }
+        
+        const topLeft = [x - offset, y + offset];
+        const topRight = [x + offset, y + offset];
+        const bottomRight = [x + offset, y - offset];
+        const bottomLeft = [x - offset, y - offset];
+
+        // 6 vertices forming two triangles
+        addVertexToArrays(topLeft, color, false, isHelper);
+        addVertexToArrays(topRight, color, false, isHelper);
+        addVertexToArrays(bottomRight, color, false, isHelper);
+
+        addVertexToArrays(topLeft, color, false, isHelper);
+        addVertexToArrays(bottomRight, color, false, isHelper);
+        addVertexToArrays(bottomLeft, color, false, isHelper);
+    }
+
+    function addTriangleVertex([x, y], color) {
+        // Add to main triangle arrays
+        trianglePositions.push(x, y);
+        triangleColors.push(...color);
+    }
+
+    function addLineVertex([x, y], color) {
+        linePositions.push(x, y);
+        lineColors.push(...color);
+    }
+
+    // If isHelper is true, this vertex goes to helper arrays. Otherwise, to triangle arrays.
+    // lineMode is false here because helper points are always drawn as filled squares (triangles).
+    function addVertexToArrays([x, y], color, lineMode, isHelper) {
+        if (isHelper) {
+            helperPositions.push(x, y);
+            helperColors.push(...color);
+        } else {
+            // If not helper and lineMode=false => triangle arrays
+            trianglePositions.push(x, y);
+            triangleColors.push(...color);
+        }
+    }
+
+    function finalizeShape() {
+        // The shape is done, clear helper arrays so helper points vanish.
+        helperPositions = [];
+        helperColors = [];
+        resetTempData();
+        redraw();
+    }
+
+    function redraw() {
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        const triangleCount = trianglePositions.length / 2;
+        const lineCount = linePositions.length / 2;
+        const helperCount = helperPositions.length / 2;
+
+        const totalPositions = trianglePositions.length + linePositions.length + helperPositions.length;
+        const totalColors = triangleColors.length + lineColors.length + helperColors.length;
+
+        const combinedPositions = new Float32Array(totalPositions);
+        combinedPositions.set(trianglePositions, 0);
+        combinedPositions.set(linePositions, trianglePositions.length);
+        combinedPositions.set(helperPositions, trianglePositions.length + linePositions.length);
+
+        const combinedColors = new Float32Array(totalColors);
+        combinedColors.set(triangleColors, 0);
+        combinedColors.set(lineColors, triangleColors.length);
+        combinedColors.set(helperColors, triangleColors.length + lineColors.length);
+
+        const positionBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-        gl.bufferSubData(gl.ARRAY_BUFFER, index * 2 * Float32Array.BYTES_PER_ELEMENT, new Float32Array([x, y]));
+        gl.bufferData(gl.ARRAY_BUFFER, combinedPositions, gl.DYNAMIC_DRAW);
+
+        const colorBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, combinedColors, gl.DYNAMIC_DRAW);
+
+        const a_Position = gl.getAttribLocation(program, "a_Position");
+        const a_Color = gl.getAttribLocation(program, "a_Color");
+
+        // Positions
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
         gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(a_Position);
 
+        // Colors
         gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-        gl.bufferSubData(gl.ARRAY_BUFFER, index * 4 * Float32Array.BYTES_PER_ELEMENT, new Float32Array(color));
         gl.vertexAttribPointer(a_Color, 4, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(a_Color);
 
-        numPoints = Math.max(numPoints, ++index);
-        index %= maxVertices;
+        // Draw Triangles
+        if (triangleCount > 0) {
+            gl.drawArrays(gl.TRIANGLES, 0, triangleCount);
+        }
 
-        gl.clear(gl.COLOR_BUFFER_BIT);
-        gl.drawArrays(gl.TRIANGLES, 0, numPoints);
+        // Draw Lines (immediately after triangles)
+        if (lineCount > 0) {
+            gl.drawArrays(gl.LINES, triangleCount, lineCount);
+        }
+
+        // Draw Helper Points (as triangles after lines)
+        if (helperCount > 0) {
+            gl.drawArrays(gl.TRIANGLES, triangleCount + lineCount, helperCount);
+        }
     }
 };
