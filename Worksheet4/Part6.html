@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Part 6: Answers</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 1em;
+    line-height: 1.5;
+  }
+  h3, h4 {
+    margin-top: 1.5em;
+  }
+  ul {
+    margin-left: 1.5em;
+  }
+</style>
+</head>
+<body>
+
+<h3>Part 6: Answers</h3>
+
+<h4>a) What is the difference between Phong shading and Phong lighting (the Phong reflection model)?</h4>
+<ul>
+  <li><strong>Phong Lighting:</strong> Refers to the reflection model used to calculate the light interaction at a surface point. It involves computing ambient, diffuse, and specular lighting based on material and light properties.</li>
+  <li><strong>Phong Shading:</strong> Refers to the shading technique where the lighting calculations are done in the fragment shader for each pixel using interpolated surface normals. This results in smooth lighting and highlights across the surface.</li>
+</ul>
+
+<h4>b) What is the difference between flat shading, Gouraud shading, and Phong shading? List pros and cons of each. Is Gouraud or Phong shading the best method for simulating highlights? Explain.</h4>
+<ul>
+  <li><strong>Flat Shading</strong>:
+    <ul>
+      <li><em>Description:</em> Lighting is calculated once per polygon using a single normal vector, and the result is applied uniformly across the polygon.</li>
+      <li><em>Pros:</em> Simple, fast to compute.</li>
+      <li><em>Cons:</em> Produces faceted appearances, not suitable for smooth surfaces.</li>
+    </ul>
+  </li>
+  <li><strong>Gouraud Shading</strong>:
+    <ul>
+      <li><em>Description:</em> Lighting is calculated at each vertex, and the results are interpolated across the surface of the polygon.</li>
+      <li><em>Pros:</em> Produces smoother results than flat shading; efficient for simple lighting.</li>
+      <li><em>Cons:</em> Highlights may be missed if they fall between vertices.</li>
+    </ul>
+  </li>
+  <li><strong>Phong Shading</strong>:
+    <ul>
+      <li><em>Description:</em> Lighting is calculated per pixel in the fragment shader using interpolated normals.</li>
+      <li><em>Pros:</em> Produces very smooth and realistic highlights; accurate rendering of curved surfaces.</li>
+      <li><em>Cons:</em> More computationally expensive than Gouraud shading.</li>
+    </ul>
+  </li>
+</ul>
+<p><strong>Best for highlights:</strong> Phong shading is better for simulating highlights as it calculates lighting at the pixel level, ensuring smooth and accurate highlights even between vertices.</p>
+
+<h4>c) What is the difference between a directional light and a point light?</h4>
+<ul>
+  <li><strong>Directional Light:</strong> Represents light with parallel rays originating from a distant source (e.g., the Sun). It has a direction but no position.</li>
+  <li><strong>Point Light:</strong> Represents a light source that emits rays in all directions from a specific position in space (e.g., a bulb). Its intensity decreases with distance.</li>
+</ul>
+
+<h4>d) Does the eye position influence the shading of an object in any way?</h4>
+<p>Yes, the eye position influences the specular highlights of an object. The reflection vector depends on the eye position, and the specular term in the lighting model uses the angle between the view direction and the reflection direction to calculate the intensity of highlights.</p>
+
+<h4>e) What is the effect of setting the specular term to (0, 0, 0)?</h4>
+<p>Setting the specular term to (0, 0, 0) removes specular highlights, resulting in a matte appearance. The object will only show diffuse and ambient lighting effects.</p>
+
+<h4>f) What is the effect of increasing the shininess exponent (α)?</h4>
+<p>Increasing the shininess exponent (α) makes the specular highlights smaller and sharper. This simulates smoother and more reflective surfaces.</p>
+
+<h4>g) In what coordinate space did you compute the lighting?</h4>
+<p>Lighting was computed in world space. The normals, light directions, and view vectors were transformed into world coordinates for consistent calculations.</p>
+
+</body>
+</html>

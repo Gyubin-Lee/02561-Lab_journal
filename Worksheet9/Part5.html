@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Part 5: Answers</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 1em;
+    line-height: 1.5;
+  }
+  h3, h4 {
+    margin-top: 1.5em;
+  }
+  ul {
+    margin-left: 1.5em;
+  }
+</style>
+</head>
+<body>
+
+<h3>Comparison of Projection Shadows and Shadow Mapping</h3>
+
+<h4>Projection Shadows</h4>
+<ul>
+  <li><strong>Advantages:</strong>
+    <ul>
+      <li><em>Simplicity:</em> Easy to implement, often just involves a matrix projection onto a plane.</li>
+      <li><em>Performance:</em> Fast, as it typically requires fewer per-pixel operations.</li>
+      <li><em>No Extra Memory:</em> Does not necessarily require additional buffers like textures.</li>
+    </ul>
+  </li>
+  <li><strong>Disadvantages:</strong>
+    <ul>
+      <li><em>Limited Generality:</em> Works best for flat receiving surfaces; not suitable for complex geometry.</li>
+      <li><em>No Self-Shadowing:</em> Cannot accurately depict objects casting shadows onto themselves.</li>
+      <li><em>Lack of Realism:</em> Complex lighting and multiple objects are not well represented.</li>
+    </ul>
+  </li>
+</ul>
+
+<h4>Shadow Mapping</h4>
+<ul>
+  <li><strong>Advantages:</strong>
+    <ul>
+      <li><em>Flexibility:</em> Works on arbitrary surfaces, not limited to planes.</li>
+      <li><em>Self-Shadowing:</em> Objects can cast shadows onto themselves and others, adding realism.</li>
+      <li><em>Scalability:</em> One shadow map can handle multiple objects and complex scenes.</li>
+    </ul>
+  </li>
+  <li><strong>Disadvantages:</strong>
+    <ul>
+      <li><em>Memory Usage:</em> Requires additional texture buffers, increasing memory consumption.</li>
+      <li><em>Artifacts:</em> Susceptible to aliasing, "acne," and other visual issues without careful tweaking.</li>
+      <li><em>Performance Overhead:</em> Involves extra rendering passes and texture lookups.</li>
+    </ul>
+  </li>
+</ul>
+
+</body>
+</html>

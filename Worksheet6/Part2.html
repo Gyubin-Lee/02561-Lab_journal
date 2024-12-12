@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Texture Filtering Modes</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 1em;
+    line-height: 1.5;
+  }
+  h3, h4 {
+    margin-top: 1.5em;
+  }
+  ul {
+    margin-left: 1.5em;
+  }
+</style>
+</head>
+<body>
+
+<h3>Texture Filtering Modes</h3>
+<p>Texture filtering modes control how textures are sampled when displayed at sizes different from their original resolution. They influence how textures appear during magnification (when a texture is scaled up) and minification (when a texture is scaled down), addressing issues like blockiness, blurriness, and moiré patterns.</p>
+
+<h4>1. NEAREST</h4>
+<ul>
+  <li><strong>Description:</strong> Chooses the texel nearest to the specified texture coordinates without any interpolation.</li>
+  <li><strong>Magnification:</strong> Results in a blocky, pixelated look, as each enlarged pixel maps directly to one or a few texels.</li>
+  <li><strong>Minification:</strong> Can cause aliasing and a noisy appearance when the texture is far away, as no smoothing is applied.</li>
+  <li><strong>Use Case:</strong> Useful for pixel art or retro-styled graphics where crisp edges are desired.</li>
+</ul>
+
+<h4>2. LINEAR</h4>
+<ul>
+  <li><strong>Description:</strong> Samples the four nearest texels and linearly interpolates their values to produce a smoother result.</li>
+  <li><strong>Magnification:</strong> Produces a smoother, less pixelated image compared to NEAREST, but may appear slightly blurry.</li>
+  <li><strong>Minification:</strong> Reduces aliasing compared to NEAREST but can still appear somewhat blurry or produce moiré patterns in detailed textures.</li>
+  <li><strong>Use Case:</strong> A good general choice for many applications, balancing smoothness and performance.</li>
+</ul>
+
+<h4>3. NEAREST_MIPMAP_NEAREST</h4>
+<ul>
+  <li><strong>Description:</strong> Uses mipmaps (pre-computed, downscaled versions of the texture) and chooses the nearest mipmap level for the current distance, then applies NEAREST filtering within that level.</li>
+  <li><strong>Minification:</strong> Significantly reduces moiré patterns and aliasing by using the appropriate mipmap level. The chosen level is sampled without interpolation, which can still appear a bit rough.</li>
+  <li><strong>Magnification:</strong> If magnifying (using a level that’s too detailed), it will still be blocky due to NEAREST sampling.</li>
+  <li><strong>Use Case:</strong> Faster than linear mipmap modes, suitable when performance is critical and some roughness in detail is acceptable.</li>
+</ul>
+
+<h4>4. LINEAR_MIPMAP_NEAREST</h4>
+<ul>
+  <li><strong>Description:</strong> Chooses the nearest mipmap level based on distance, then applies LINEAR filtering within that single level.</li>
+  <li><strong>Minification:</strong> Results in smoother scaling than NEAREST_MIPMAP_NEAREST. Reduces moiré patterns and provides a smoother look at a distance.</li>
+  <li><strong>Magnification:</strong> At close range, still linear samples of a single mipmap level, providing a reasonable balance of performance and quality.</li>
+  <li><strong>Use Case:</strong> Good for scenes where a bit more smoothness is desired without the overhead of blending between mip levels.</li>
+</ul>
+
+<h4>5. NEAREST_MIPMAP_LINEAR</h4>
+<ul>
+  <li><strong>Description:</strong> Interpolates between two closest mipmap levels but uses NEAREST filtering within each level.</li>
+  <li><strong>Minification:</strong> Provides smoother transitions between levels, reducing popping artifacts that occur when switching mip levels. However, since NEAREST is used inside each level, some blockiness remains.</li>
+  <li><strong>Magnification:</strong> Still not ideal for magnification, as blockiness can occur due to NEAREST sampling inside the chosen levels.</li>
+  <li><strong>Use Case:</strong> When transitioning between mipmap levels smoothly is crucial, but you still prefer a "crisper" look from NEAREST filtering.</li>
+</ul>
+
+<h4>6. LINEAR_MIPMAP_LINEAR</h4>
+<ul>
+  <li><strong>Description:</strong> Performs linear filtering in both the chosen mipmap levels and linearly blends between two mipmap levels.</li>
+  <li><strong>Minification:</strong> Offers the highest quality among these modes, greatly reducing aliasing and moiré. The texture scales down smoothly, with minimal artifacts.</li>
+  <li><strong>Magnification:</strong> Also smooth when scaling up, but can appear more blurry than NEAREST-based methods.</li>
+  <li><strong>Use Case:</strong> Ideal when visual quality is a priority and performance cost is acceptable, commonly used in high-quality real-time 3D rendering.</li>
+</ul>
+
+</body>
+</html>

@@ -50,15 +50,6 @@ window.onload = function init() {
         0, 4, 1, 5, 2, 6, 3, 7   // Connecting edges
     ]);
 
-    // Setting projection matrix
-    var fov = 45;
-    var aspect = canvas.width / canvas.height;
-    var near = 0.1;
-    var far = 100.0;
-    var perspectiveMatrix = perspective(fov, aspect, near, far);
-    var u_Projection = gl.getUniformLocation(program, "u_Projection");
-    gl.uniformMatrix4fv(u_Projection, false, flatten(perspectiveMatrix));
-
     // Setting up vertex position buffer and index buffer
     var iBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, iBuffer);
@@ -76,29 +67,69 @@ window.onload = function init() {
     var at = vec3(0.5, 0.5, 0.5);
     var up = vec3(0.0, 1.0, 0.0);
 
-    var viewMatrix1 = lookAt(vec3(0.0, 0.0, 3.0), at, up);  // One-point perspective
-    var viewMatrix2 = lookAt(vec3(3.0, 1.0, 3.0), at, up);  // Two-point perspective
-    var viewMatrix3 = lookAt(vec3(3.0, 3.0, 3.0), at, up);  // Three-point perspective
-
-    // Define model matrix (optional: rotate or translate if needed)
-    var modelMatrix = mult(rotateX(0), rotateY(0));
+      // One-point perspective
+    var viewMatrix2 = lookAt(vec3(0.0, 0.5, 5.0), at, up);  // Two-point perspective
+    var viewMatrix3 = lookAt(vec3(0.0, 1.0, 1.0), at, up);  // Three-point perspective
 
     // Uniform locations for view and model matrices
     var u_View = gl.getUniformLocation(program, "u_View");
     var u_Model = gl.getUniformLocation(program, "u_Model");
+    var u_Projection = gl.getUniformLocation(program, "u_Projection");
 
     // Set color uniform location
     var u_FragColor = gl.getUniformLocation(program, "u_FragColor");
 
     // Function to render each perspective with a different color
-    function renderPerspective(viewMatrix, color, wireframeColor) {
-        // Draw solid faces
-        gl.uniformMatrix4fv(u_View, false, flatten(viewMatrix));
-        gl.uniformMatrix4fv(u_Model, false, flatten(modelMatrix));
-        gl.uniform4fv(u_FragColor, color);
-        gl.drawElements(gl.TRIANGLES, triangle_indices.length, gl.UNSIGNED_BYTE, 0);
+    function renderPerspective(wireframeColor=[0.0, 0.0, 0.0, 1.0]) {
+        var perspectiveMatrix = perspective(45, canvas.width / canvas.height, 1, 5);
+        var modelMatrix = mult(rotateX(0), rotateY(0));
 
-        // Draw wireframe
+        // Draw 1-point perspective
+        var modelMatrix1 = [
+            modelMatrix,
+            translate(0, 0.5, 0),
+            scalem(0.5, 0.5, 0.5)
+        ].reduce(mult);
+        var viewMatrix1 = lookAt(vec3(0.5, 0.5, 3.0), at, up);
+                
+        gl.uniformMatrix4fv(u_Projection, false, flatten(perspectiveMatrix));
+        gl.uniformMatrix4fv(u_View, false, flatten(viewMatrix1));
+        gl.uniformMatrix4fv(u_Model, false, flatten(modelMatrix1));
+
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, iBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, wire_indices, gl.STATIC_DRAW);
+        gl.uniform4fv(u_FragColor, wireframeColor);
+        gl.drawElements(gl.LINES, wire_indices.length, gl.UNSIGNED_BYTE, 0);
+
+        // Draw 2-point perspective
+        var modelMatrix2 = [
+            modelMatrix,
+            translate(-0.5, -0.5, 0),
+            scalem(0.5, 0.5, 0.5)
+        ].reduce(mult);
+        var viewMatrix2 = lookAt(vec3(0.0, 0.5, 3.5), at, up);
+                
+        gl.uniformMatrix4fv(u_Projection, false, flatten(perspectiveMatrix));
+        gl.uniformMatrix4fv(u_View, false, flatten(viewMatrix2));
+        gl.uniformMatrix4fv(u_Model, false, flatten(modelMatrix2));
+
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, iBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, wire_indices, gl.STATIC_DRAW);
+        gl.uniform4fv(u_FragColor, wireframeColor);
+        gl.drawElements(gl.LINES, wire_indices.length, gl.UNSIGNED_BYTE, 0);
+
+        // Draw 3-point perspective
+        var modelMatrix3 = [
+            modelMatrix,
+            translate(0.5, -0.5, 0),
+            scalem(0.5, 0.5, 0.5)
+        ].reduce(mult);
+        var viewMatrix3 = lookAt(vec3(0.0, 1.5, 3.0), at, up);
+                
+        gl.uniformMatrix4fv(u_Projection, false, flatten(perspectiveMatrix));
+        gl.uniformMatrix4fv(u_View, false, flatten(viewMatrix3));
+        gl.uniformMatrix4fv(u_Model, false, flatten(modelMatrix3));
+
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, iBuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, wire_indices, gl.STATIC_DRAW);
         gl.uniform4fv(u_FragColor, wireframeColor);
@@ -110,7 +141,5 @@ window.onload = function init() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // Render each perspective with wireframe
-    //renderPerspective(viewMatrix1, [1.0, 0.0, 0.0, 1.0], [0.0, 0.0, 0.0, 1.0]); // Red with black wireframe
-    //renderPerspective(viewMatrix2, [0.0, 1.0, 0.0, 1.0], [0.0, 0.0, 0.0, 1.0]); // Green with black wireframe
-    renderPerspective(viewMatrix3, [0.0, 0.0, 1.0, 1.0], [0.0, 0.0, 0.0, 1.0]); // Blue with black wireframe
+    renderPerspective();
 };

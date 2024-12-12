@@ -21,11 +21,11 @@ window.onload = async function init() {
     gl.enable(gl.DEPTH_TEST);
 
     // Set up projection and view matrices
-    const projectionMatrix = perspective(45, canvas.width / canvas.height, 0.1, 100);
-    const viewMatrix = lookAt(vec3(0, 0.05, -0.8), vec3(0, 0, -1), vec3(0, 1, 0));
+    const projectionMatrix = perspective(90, canvas.width / canvas.height, 1, 20);
+    const viewMatrix = lookAt(vec3(0, 0, -1), vec3(0, 0, -3), vec3(0, 1, 0));
 
     // Helper function to initialize attribute variables
-    function initAttributeVariable(gl, program, buffer, attribute, size, type, stride, offset) {
+    function initAttributeVariable(gl, program, buffer, attribute, size, type, stride=0, offset=0) {
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
         const location = gl.getAttribLocation(program, attribute);
         if (location < 0) {
@@ -68,7 +68,7 @@ window.onload = async function init() {
     };
 
     // Teapot setup
-    const teapot = await readOBJFile("../teapot.obj", 0.25, true);
+    const teapot = await readOBJFile("../teapot.obj", 1, false);
     if (!teapot) {
         alert("Failed to load teapot OBJ file.");
         return;
@@ -158,7 +158,7 @@ window.onload = async function init() {
         // Animate teapot
         if (motionEnabled) {
             teapotY += direction;
-            if (teapotY >= 0.5 || teapotY <= -1) direction *= -1;
+            if (teapotY >= 0.1 || teapotY <= -1) direction *= -1;
         }
 
         // Draw shadows
