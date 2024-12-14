@@ -1,28 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project</title>
-    <script src="../angelCommon/initShaders.js"></script>
-    <script src="../angelCommon/MV.js"></script>
-    <script src="../angelCommon/webgl-utils.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2D Drawing Application</title>
+<script src="../angelCommon/initShaders.js"></script>
+<script src="../angelCommon/MV.js"></script>
+<script src="../angelCommon/webgl-utils.js"></script>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 1em;
+        background: #f5f5f5;
+    }
+    h1 {
+        text-align: center;
+    }
+    .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1em;
+        margin-bottom: 1em;
+        justify-content: center;
+    }
+    .section {
+        background: #fff;
+        padding: 1em;
+        border-radius: 0.5em;
+        box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    .buttons, .selection, .bezier-control {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5em;
+    }
+    label {
+        font-size: 0.9em;
+        color: #333;
+    }
+    button {
+        padding: 0.5em;
+        background: #007BFF;
+        border: none;
+        color: white;
+        border-radius: 0.25em;
+        cursor: pointer;
+    }
+    button:hover {
+        background: #0056b3;
+    }
+    select, input[type=number] {
+        padding: 0.3em;
+    }
+    canvas {
+        display: block;
+        margin: 0 auto;
+        background: #fff;
+        border: 1px solid #ccc;
+    }
+    a {
+        display: inline-block;
+        margin-top: 1em;
+        text-decoration: none;
+        color: #007BFF;
+    }
+    a:hover {
+        text-decoration: underline;
+    }
+</style>
 </head>
 <body>
-    <div>
-        <button id="pointModeButton">add points</button>
-        <button id="triangleModeButton">add triangles</button>
-        <button id="circleModeButton">add spheres</button>
-        <button id="bezierModeButton">add Bezier</button>
-    </div>
+    <h1>2D Drawing Application</h1>
 
-    <div>
-        <label for="w1Input">Set w1 for Bezier: </label>
-        <input type="number" id="w1Input" value="1" step="0.1"/>
+    <div class="controls">
+
+        <div class="section buttons">
+            <label>Select Drawing Mode:</label>
+            <button id="pointModeButton">Add Points</button>
+            <button id="triangleModeButton">Add Triangles</button>
+            <button id="circleModeButton">Add Circles</button>
+            <button id="bezierModeButton">Add Rational Bezier</button>
+        </div>
+
+        <div class="section bezier-control">
+            <label for="w1Input">Set w1 for Rational Bezier:</label>
+            <input type="number" id="w1Input" value="1" step="0.1"/>
+        </div>
+
+        <div class="section selection">
+            <label for="colorMenu">Select Drawing Color:</label>
+            <select id="colorMenu" size="8">
+                <option value="0" selected>Black</option>
+                <option value="1">Red</option>
+                <option value="2">Yellow</option>
+                <option value="3">Green</option>
+                <option value="4">Blue</option>
+                <option value="5">Magenta</option>
+                <option value="6">Cyan</option>
+                <option value="7">Cornflower</option>
+            </select>
+
+            <label for="clearMenu">Select Background Color:</label>
+            <select id="clearMenu" size="1">
+                <option value="0">Black</option>
+                <option value="1">Red</option>
+                <option value="2">Yellow</option>
+                <option value="3">Green</option>
+                <option value="4">Blue</option>
+                <option value="5">Magenta</option>
+                <option value="6">Cyan</option>
+                <option value="7" selected>Cornflower</option>
+            </select>
+            <button id="clearButton">Clear Canvas</button>
+        </div>
+
     </div>
 
     <canvas id="webgl-canvas" width="512" height="512"></canvas>
-    <!-- Vertex shader -->
+
+    <!-- Vertex Shader -->
     <script id="vertex-shader" type="x-shader/x-vertex">
         attribute vec4 a_Position;
         attribute vec4 a_Color;
@@ -35,8 +132,8 @@
             gl_PointSize = 20.0;
         }
     </script>
-    
-    <!-- Fragment shader -->
+
+    <!-- Fragment Shader -->
     <script id="fragment-shader" type="x-shader/x-fragment">
         precision mediump float;
 
@@ -47,35 +144,11 @@
         }
     </script>
 
-    <select id="colorMenu" size="8">
-        <option value="0" selected>Black</option>
-        <option value="1">Red</option>
-        <option value="2">Yellow</option>
-        <option value="3">Green</option>
-        <option value="4">Blue</option>
-        <option value="5">Magenta</option>
-        <option value="6">Cyan</option>
-        <option value="7">Cornflower</option>
-    </select>
-
-    <select id="clearMenu" size="1">
-        <option value="0">Black</option>
-        <option value="1">Red</option>
-        <option value="2">Yellow</option>
-        <option value="3">Green</option>
-        <option value="4">Blue</option>
-        <option value="5">Magenta</option>
-        <option value="6">Cyan</option>
-        <option value="7" selected>Cornflower</option>
-    </select>
-
-    <br/>
-    <button id="clearButton">Clear Canvas</button>
-
-    <!-- Include your external JavaScript file -->
+    <!-- Main JavaScript Code -->
     <script src="project.js"></script>
 
-    <br/>
-    <a href="../index.html">Back to Home</a>
+    <div style="text-align:center;">
+        <a href="../index.html">Back to Home</a>
+    </div>
 </body>
 </html>
